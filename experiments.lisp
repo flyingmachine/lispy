@@ -1,0 +1,5 @@
+(let ((bill '("test"))
+      (hardy '("another"))
+      )
+  (print bill)
+  (print hardy))
