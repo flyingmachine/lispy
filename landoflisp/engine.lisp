@@ -5,7 +5,7 @@
  (defun describe-location (location nodes)
    (cadr (assoc location nodes)))
 
- (defparameter *edges* '((living-room (garden west door)
+ (defparameter *wizard-edges* '((living-room (garden west door)
                                       (attick upstairs ladder))
                          (garden (living-room east door))
                          (attic (living-room downstairs ladders))))
@@ -36,13 +36,13 @@
 (defparameter *location* 'living-room)
 
 (defun look ()
-  (append (describe-location *location* *nodes*)
-          (describe-paths *location* *edges*)
+  (append (describe-location *location* *wizard-nodes*)
+          (describe-paths *location* *wizard-edges*)
           (describe-objects *location* *objects* *object-locations*)))
 
 (defun walk (direction)
   (let ((next (find direction
-                    (cdr (assoc *location* *edges*))
+                    (cdr (assoc *location* *wizard-edges*))
                     :key #'cadr)))
     (if next
         (progn (setf *location* (car next))
