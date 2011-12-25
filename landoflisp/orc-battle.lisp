@@ -129,7 +129,7 @@
              (princ "! "))
     (progn (princ "You hit the ")
            (princ (type-of m))
-           (princ ", knocking off")
+           (princ ", knocking off ")
            (princ x)
            (princ " health points! "))))
 
@@ -144,7 +144,7 @@
 (push #'make-orc *monster-builders*)
 
 (defmethod monster-show ((m orc))
-  (princ "A wicked orc wiht a level ")
+  (princ "A wicked orc with a level ")
   (princ (orc-club-level m))
   (princ " club"))
 
@@ -165,7 +165,7 @@
   (princ " heads."))
 
 (defmethod monster-hit ((m hydra) x)
-  (decf (monster-health) x)
+  (decf (monster-health m) x)
   (if (monster-dead m)
       (princ "The corpse of the fully decapitated and decapacitated hydra falls to the floor!")
     (progn (princ "You lop off ")
