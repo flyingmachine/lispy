@@ -3,14 +3,18 @@
 (defparameter *board-size* 2)
 (defparameter *board-hexnum* (* *board-size* *board-size*))
 
+;; converts a board grid into an array
 (defun board-array (lst)
   (make-array *board-hexnum* :initial-contents lst))
 
+;; randomly generates a board by randomly putting a player in each hex
+;; and randomly adding a number of dice, from 1 to max dice
 (defun gen-board ()
   (board-array (loop for n below *board-hexnum*
                      collect (list (random *num-players*)
                                    (1+ (random *max-dice*))))))
 
+;; give character for player instead of number
 (defun player-letter (n)
   (code-char (+ 97 n)))
 
@@ -24,6 +28,9 @@
                         do (format t "~a-~a " (player-letter (first hex))
                                    (second hex))))))
 
+;; returns a list of structure:
+;; player, board, (move1 move2 move 3)
+;; passing move, if possible, is first. nil indicates passing move
 (defun game-tree (board player spare-dice first-move)
   (list player
         board
@@ -33,6 +40,14 @@
                           first-move
                           (attacking-moves board player spare-dice))))
 
+;; passing move is a new game tree node with:
+;; * a board where spare dice have been distributed
+;; * it's the next player's turn
+;; * there are 0 spare dice
+;; * it's the first move
+;;
+;; returns: (passing-move moves)
+;; where moves is a list of attacking moves
 (defun add-passing-move (board player spare-dice first-move moves)
   (if first-move
       moves
@@ -43,6 +58,11 @@
                            t))
           moves)))
 
+;; spare-dice accumulates with every attack
+;; go through each hex. if the hex player is the current player,
+;; determine whether the player can attack. if the player can attack,
+;; add the attack to the list of moves. move takes the form of
+;; ((src-hex, destination-hex) game-tree)
 (defun attacking-moves (board cur-player spare-dice)
   (labels ((player (pos)
                    (car (aref board pos)))
@@ -74,6 +94,8 @@
           when (and (>= p 0) (< p *board-hexnum*))
          collect p )))
 
+;; generates board resulting from player attacking from src to dst
+;; with given number of dice
 (defun board-attack (board player src dst dice)
   (board-array (loop for pos from 0
                      for hex across board
@@ -93,6 +115,7 @@
                            (cons (car lst) (f (cdr lst) n))))))))
     (board-array (f (coerce board 'list) spare-dice))))
 
+;; continues until you reach a tree with no moves.
 (defun play-vs-human (tree)
   (print-info tree)
   (if (caddr tree)
@@ -104,6 +127,7 @@
   (format t "current player = ~a" (player-letter (car tree)))
   (draw-board (cadr tree)))
 
+;; returns new tree when given a move
 (defun handle-human (tree)
   (fresh-line)
   (princ "choose your move:")
@@ -164,3 +188,4 @@
   (cond ((null (caddr tree)) (announce-winner (cadr tree)))
         ((zerop (car tree)) (play-vs-computer (handle-human tree)))
         (t (play-vs-computer (handle-computer tree)))))
+
