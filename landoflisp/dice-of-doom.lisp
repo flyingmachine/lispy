@@ -1,6 +1,6 @@
 (defparameter *num-players* 2)
 (defparameter *max-dice* 3)
-(defparameter *board-size* 2)
+(defparameter *board-size* 3)
 (defparameter *board-hexnum* (* *board-size* *board-size*))
 
 ;; converts a board grid into an array
@@ -39,6 +39,12 @@
                           spare-dice
                           first-move
                           (attacking-moves board player spare-dice))))
+
+(let ((old-game-tree (symbol-function 'game-tree))
+      (previous (make-hash-table :test #'equalp)))
+  (defun game-tree (&rest rest)
+    (or (gethash rest previous)
+        (setf (gethash rest previous) (apply old-game-tree rest)))))
 
 ;; passing move is a new game tree node with:
 ;; * a board where spare dice have been distributed
@@ -94,6 +100,12 @@
           when (and (>= p 0) (< p *board-hexnum*))
          collect p )))
 
+(let ((old-neighbors (symbol-function 'neighbors))
+      (previous (make-hash-table)))
+  (defun neighbors (pos)
+    (or (gethash pos previous)
+        (setf (gethash pos previous) (funcall old-neighbors pos)))))
+
 ;; generates board resulting from player attacking from src to dst
 ;; with given number of dice
 (defun board-attack (board player src dst dice)
@@ -103,17 +115,33 @@
                                    ((eq pos dst) (list player (1- dice)))
                                    (t hex)))))
 
+
+;; non tail-call-optimized
+;;(defun add-new-dice (board player spare-dice)
+;;  (labels ((f (lst n)
+;;              (cond ((null lst) nil)
+;;                    ((zerop n) lst)
+;;                    (t (let ((cur-player (caar lst))
+;;                             (cur-dice (cadar lst)))
+;;                         (if (and (eq cur-player player) (< cur-dice *max-dice*))
+;;                                  (cons (list cur-player (1+ cur-dice))
+;;                                        (f (cdr lst) (1- n)))
+;;                           (cons (car lst) (f (cdr lst) n))))))))
+;;    (board-array (f (coerce board 'list) spare-dice))))
+
 (defun add-new-dice (board player spare-dice)
-  (labels ((f (lst n)
-              (cond ((null lst) nil)
-                    ((zerop n) lst)
+  (labels ((f (lst n acc)
+              (cond ((zerop n) (append (reverse acc) lst))
+                    ((null lst) (reverse acc))
                     (t (let ((cur-player (caar lst))
                              (cur-dice (cadar lst)))
-                         (if (and (eq cur-player player) (< cur-dice *max-dice*))
-                                  (cons (list cur-player (1+ cur-dice))
-                                        (f (cdr lst) (1- n)))
-                           (cons (car lst) (f (cdr lst) n))))))))
-    (board-array (f (coerce board 'list) spare-dice))))
+                         (if (and (eq cur-player player)
+                                  (< cur-dice *max-dice*))
+                             (f (cdr lst)
+                                (1- n)
+                                (cons (list cur-player (1+ cur-dice)) acc))
+                           (f (cdr lst) n (cons (car lst) acc))))))))
+    (board-array (f (coerce board 'list) spare-dice ()))))
 
 ;; continues until you reach a tree with no moves.
 (defun play-vs-human (tree)
@@ -173,6 +201,16 @@
         (if (member player w)
             (/ 1 (length w))
           0)))))
+
+(let ((old-rate-position (symbol-function 'rate-position))
+      (previous (make-hash-table)))
+  (defun rate-position (tree player)
+    (let ((tab (gethash player previous)))
+      (unless tab
+        (setf tab (setf (gethash player previous) (make-hash-table))))
+      (or (gethash tree tab)
+          (setf (gethash tree tab)
+                (funcall old-rate-position tree player))))))
 
 (defun get-ratings (tree player)
   (mapcar (lambda (move)
