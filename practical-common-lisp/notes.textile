@@ -1,0 +1,39 @@
+h2. Ch 2 REPL
+
+* self-evaluating object: when given to the evaluator, evaluates to
+  itself. Examples: 8, nil
+* format: easiest way is with (format t "string"). Required arguments:
+  place to send output and string.
+* Load a file with (load (compile-file "scratch.lisp")) to first
+  create a FASL (fast load) file.
+
+h2. Ch 3 A Simple Database
+
+* Property list: every other element is a symbol that describes what
+  the next element in the list is.
+  Ex: (list :a 1 :b 2 :c 3)
+* Use GETF to get a value for a symbol
+  Ex: (getf (list :a 1 :b 2 :c 3) :a) ; 1
+* DEFVAR defines a global variable. Will not run if variable is
+  already created and initialized. DEFPARAMETER reinitializes.
+* PUSH add items to a list
+* DOLIST loop for each element of a list, binding element to variable.
+  Like ruby's each.
+  Ex: (dolist (yarg (list 1 2 3)) ;do whatever to yarg)
+  This will assign 1, 2, and 3 to yarg
+* FORMAT
+** ~a : aesthetic. strings w/o quotes, symbols without colons
+** ~t : tabulating. ~10t emit enough spaces to move to the tenth
+   column before processing the next ~a. Doesn't consume args
+** ~{ : the next argument must be a list. Loops over list, processing
+   the directives between the braces.
+** ~% : emit newline
+h2. Slime
+
+* C-c C-c : compile function
+* C-c C-l : slime-load-file. Prompts for name of file to load
+* C-c C-k : compile and load file represented by current buffer
+* When you get an error, you're put in a debugging buffer. Type 'q' to
+  quit
+* 
+

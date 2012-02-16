@@ -202,27 +202,7 @@
         (format t "The game is a tie between ~a" (mapcar #'player-letter w))
       (format t "the winner is ~a" (player-letter (car w))))))
 
-(defun rate-position (tree player)
-  (let ((moves (caddr tree)))
-    (if moves
-        (apply (if (eq (car tree) player)
-                   #'max
-                 #'min)
-               (get-ratings tree player))
-      (let ((w (winners (cadr tree))))
-        (if (member player w)
-            (/ 1 (length w))
-          0)))))
 
-(let ((old-rate-position (symbol-function 'rate-position))
-      (previous (make-hash-table)))
-  (defun rate-position (tree player)
-    (let ((tab (gethash player previous)))
-      (unless tab
-        (setf tab (setf (gethash player previous) (make-hash-table))))
-      (or (gethash tree tab)
-          (setf (gethash tree tab)
-                (funcall old-rate-position tree player))))))
 
 (defun get-ratings (tree player)
   (take-all (lazy-mapcar (lambda (move)
