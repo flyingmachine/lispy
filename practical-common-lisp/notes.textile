@@ -28,6 +28,24 @@ h2. Ch 3 A Simple Database
 ** ~{ : the next argument must be a list. Loops over list, processing
    the directives between the braces.
 ** ~% : emit newline
+* Y-OR-N-P - requires input of Y y N or n
+* WITH-OPEN-FILE opens file, binds the stream to a variable, executes
+  a set of expressions, and then closes the file.
+* PRINT outputs in lisp format
+* WITH-STANDARD-IO-SYNTAX ensures that certain variables that affect
+  the behavior of PRINT are set to their standard values
+* REMOVE-IF-NOT like ruby's reject
+* Keyword parameters
+  Example: (defun foo (&key a (b 20) (c 30 c-p)) (list a b c c-p))
+  when called:
+  (foo :a 1 :b 2 :c 3) -> (1 2 3 T)
+  (foo :a 1 :c 3) -> (1 20 3 T)
+  (foo) -> (NIL 20 30 NIL)
+
+  When giving a list to a keyword argument, the first item is the
+  name, second default value, third t/f on whether argument was
+  actually passed
+
 h2. Slime
 
 * C-c C-c : compile function
