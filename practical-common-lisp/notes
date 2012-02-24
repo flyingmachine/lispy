@@ -78,13 +78,17 @@ actually passed
 
 * Parameter forms
 (defun foo (a b c &optional d)
+  ;; a b c required
   (list a b c d))
 
 (defun foo (a b c &optional (d 10))
   ;; d is optional, default is 10
   (list a b c d))
 
-
+(defun foo (a b c &rest r)
+  ;; r is a list of all the remaining arguments
+  (list a b c r))
+  
 ---
 #' is syntactic sugar for FUNCTION
 
@@ -101,6 +105,9 @@ Example:
 Why does FUNCTION work on both function names and lambdas? I guess foo
 evaluates to the actual function object? But I don't think "evaluates"
 is the right word.
+--
+Footnote on p13 - "lambda" is actually a macro which expands to
+(function (lambda () blah blah))
 ---
 When you have a function object, you can invoke it with FUNCALL or
 APPLY. Use FUNCALL when you know the number of arguments you're going
@@ -109,3 +116,39 @@ to pass to the function.
 (foo 1 2 3) == (funcall #'foo 1 2 3)
 ---
 A function definition is itself another list of symbols
+---
+
+
+h2. Macros
+
+(defmacro when (condition &rest body)
+  `(if ,condition (progn ,@body)))
+
+the "@" splices the value of the expression, which must be a list,
+into the enclosing list.
+
+For example:
+`(and ,(list 1 2 3)) -> (AND (1 2 3))
+`(and ,@(list 1 2 3)) -> (AND 1 2 3)
+
+So in the macro above, "body" is now a list containing everything that
+comes after the condition. So in the following:
+
+(when (> 3 2)
+  (printf t "one")
+  (printf t "two"))
+
+"body" is the following list:
+((printf t "one") (printf t "two"))
+
+using "@" unwraps the list for macro expansion
+---
+
+h2. Basics
+
+What exactly is a form? Is 7 a form? Is any self-evaluating expression
+a form? Or does a form have to be a list?
+---
+What's the relationship between names and functions?
+---
+
