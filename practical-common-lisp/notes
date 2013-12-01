@@ -152,3 +152,8 @@ a form? Or does a form have to be a list?
 What's the relationship between names and functions?
 ---
 
+
+
+onlisp
+* functions shouldn't return anything that isn't safe to modify. Avoid writing functions whose return values incorporate quotes objects.
+
